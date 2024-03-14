@@ -60,8 +60,18 @@
     -> 쿼리파라미터 조회 방법은 6번과 같이 하면 된다.
 
 8. HTTP 요청 데이터 - API 메시지 바디 - 단순 텍스트
+  8-1
+    -> Http message body에 데이터를 직접 담아서 요청
+    -> request.getInputStream(); >> Byte 코드로 변환해서 데이터를 받아줌
+    -> streamUtils.cofyToString(바이트코드, utf-8 설정); 으로 디코딩해줘야 한다. (바이트 코드는 전부 번역타입을 지정해줘야 한다.)
 
 9. HTTP 요청 데이터 - API 메시지 바디 - JSON
+  9-1
+    -> content-type : application/json
+    -> messagebody : {"username":"hello","age":20}
+  9-2
+    -> json 객체는 데이터를 다룰때 getter, setter로 거의 접근한다 (자바프로퍼티 접근법, 자바 빈 접근법)
+    -> json을 파싱해서 자바 객체로 변환할려면 Jasckson, Gson같은 변환 라이브러리를 사용해야한다.
 
 10. HTTPServletResponse - 기본 사용법
 
