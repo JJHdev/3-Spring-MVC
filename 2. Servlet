@@ -34,6 +34,7 @@
 4. HttpServletRequest 기본 사용법
   4-1
     -> request.get~ 으로 HTTP 요청메시지 내용을 확인 할수 있다. (StartLine, 헤더, 바디 내용 조회 가능)
+    -> content-Type : 어떤 스타일의 데이터인지 설명 (application/x-www-form-urlencoded >> form 데이터)
 
 5. HTTP 요청 데이터 - 개요
   5-1
@@ -41,12 +42,22 @@
       -> /url?username=xxxx?age=20
 
     -> Post - HTML form
+      -> http 메시지 바디에 쿼리파라미터 형식으로 전달 username=xxxx&age=20
 
     -> Http message-body 
+      -> Http APi(rest Pai)에서 주료 사용 Json, Xml, Text
+      -> POST, PUT, PATCH
 
 6. HTTP 요청 데이터 - GET 쿼리 파라미터
+  6-1 전달데이터 / username=xx , age=20
+    -> /url?파라미터명=값&파라미터명=값 과 같이 ?로 시작하고 &로 파라미터 구분한다.
+    -> request.getParameter() 는 파라미터이름이 하나일 경우 , 복수 일 경우에는 request.getParameterValues() 를 사용한다.
+    -> get에서는 쿼리파라미터 형식으로 서버로 데이터를 전달 할때에는 HTTP 메시지 바디를 사용하지 않기 때문에 context-type가 없다.
 
 7. HTTP 요청 데이터 - POST HTML Form
+  7-1
+    -> content-Type  (application/x-www-form-urlencoded) 의 특징을 가지고 있다.
+    -> 쿼리파라미터 조회 방법은 6번과 같이 하면 된다.
 
 8. HTTP 요청 데이터 - API 메시지 바디 - 단순 텍스트
 
@@ -57,3 +68,20 @@
 11. HTTP 응답 데이터 - 단순 텍스트, HTML
 
 12. HTTP 응답 데이터 - API JSON
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
