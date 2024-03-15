@@ -73,7 +73,7 @@
     -> json 객체는 데이터를 다룰때 getter, setter로 거의 접근한다 (자바프로퍼티 접근법, 자바 빈 접근법)
     -> json을 파싱해서 자바 객체로 변환할려면 Jasckson, Gson같은 변환 라이브러리를 사용해야한다.
 
-10. HTTPServletResponse - 기본 사용법
+10. HTTP 응답 데이터 - HTTPServletResponse - 기본 사용법
   10.1
     -> HTTP 응답 메시지 생성 (HTTP응답코드 지정, 헤더생성, 바디생성)
     -> 편의 기능 제공 (context-Type, 쿠키, Redirect)
@@ -92,24 +92,24 @@
 
     -> redirect 관련된 메서드도 있다.
     -> response.setStatus(HttpServletResponse.SC_FOUND)
+    -> response.setHeader("location", "url주소")
+    -> 로 redirect 가능하다.
+    or
+    -> response.sendRedirect("url주소")로 이동 가능.
 
 11. HTTP 응답 데이터 - 단순 텍스트, HTML
+  11-1
+    -> response.setContentType("text/html")
+    -> response.setCharacterEncodin("utf-8")
+    -> PrintWriter writer = response.getWriter()
+    -> writer.println("<html>") 이런식으로 응답해서 html 구조를 보낸다.
 
 12. HTTP 응답 데이터 - API JSON
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  12-1
+    -> response.setContentType("application/json")
+    -> response.setCharacterEncoding("utf-8");
+    -> DAO 호출하여
+    -> DAO.set파라미터명();
+    -> ObjectMapper objectMapper = new ObjectMapper();
+    -> String result = objectMapper.writeValueAsString(DAO데이터);
+    -> response.getWriter().write(result); 하여 json데이터를 response에 싣고 보내기.
