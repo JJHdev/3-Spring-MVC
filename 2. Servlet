@@ -74,6 +74,24 @@
     -> json을 파싱해서 자바 객체로 변환할려면 Jasckson, Gson같은 변환 라이브러리를 사용해야한다.
 
 10. HTTPServletResponse - 기본 사용법
+  10.1
+    -> HTTP 응답 메시지 생성 (HTTP응답코드 지정, 헤더생성, 바디생성)
+    -> 편의 기능 제공 (context-Type, 쿠키, Redirect)
+
+  10.2
+    -> response.setStatus(HttpServletResponse.SC_OK);
+    -> response.setHeader("Content-type" , text/plain;charset=utf-8")
+    -> response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate") // 과거 캐시 지우고
+    -> response.setHeader("Pragma" , "no-cache") // 과거 캐시 지우고
+    -> response.setHeader("my-header" , "hello")
+
+    -> 쿠키와 관련된 메서드도 있다.
+    -> Cookie cookie = new Cookie("myCookie" , "good");
+    -> cookie.setMaxAge(600) // 600초
+    -> response.addCookie(cookie);
+
+    -> redirect 관련된 메서드도 있다.
+    -> response.setStatus(HttpServletResponse.SC_FOUND)
 
 11. HTTP 응답 데이터 - 단순 텍스트, HTML
 
