@@ -113,3 +113,8 @@
     -> ObjectMapper objectMapper = new ObjectMapper();
     -> String result = objectMapper.writeValueAsString(DAO데이터);
     -> response.getWriter().write(result); 하여 json데이터를 response에 싣고 보내기.
+
+
+13. summary
+  -> form태그는 기본적으로 Post로 밖에 전송밖에 안된다.
+  -> 스프링에서 실제로 put으로 전송해도 보낼때는 Post로 보내고 hidden으로 정보 숨겨서 put으로 진행한다.
