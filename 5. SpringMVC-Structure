@@ -1,4 +1,7 @@
 1. 스프링 MVC 전체 구조
+  1-1
+    -> 기존에 만들던 (4번)과 스프링 MVC구조와 크게 다를게 없다. FrontController를 DispatcherServlet이라는 이름으로만 바꾸면 거의 같다.
+    -> 
 
 2. 핸들러 매핑과 핸들러 어댑터
 
