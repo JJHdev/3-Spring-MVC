@@ -43,8 +43,8 @@
   2-2
     -> 스프링부트가 자동 등록하는 핸들러 매핑과 핸들러 어댑터
       -->> HandlerMapping
-        -> RequestMappingHandlerMapping : 애노테이션 기반의 컨트롤러인 @RequestMapping에서 사용
-        -> BeanNameUrlHandlerMapping : 스프링 빈의 이름으로 헨들러를 찾는다.
+        -> RequestMappingHandlerMapping : 애노테이션 기반의 컨트롤러인 @RequestMapping에서 사용하여 헨들러를 찾는다.
+        -> BeanNameUrlHandlerMapping : URL요청이 오면 스프링 빈의 이름과 맞는 헨들러를 찾는다.
       -->> HandlerAdapter
         -> RequestMappingHandlerAdapter : 애노테이션 기반의 컨트롤러인 @ReqeustMapping에서 사용
         -> HttpRequestHandlerAdapter : HttpRequestHandler 처리
@@ -71,11 +71,41 @@
 
 3. 뷰 리졸버
   3-1
-    -> 
+    -> 호출된 헨들러(컨트롤러)에서 return 타입에 맞춰서 논리적 타입을 보내어 뷰리졸버에서 물리적 url로 변경한다.
+    -> application.properties 에서 spring.mvc.view.prefix=/WEB-INF/views/ (물리적 url 앞주소)
+    ->                             spring.mvc.view.suffix=.jsp (물리적 url 뒷주소) 를 넣어주면 뷰 리졸버에서 물리적 URL로 변경해줄수 있다.
+    -> 스프링부트에서는 InternalResoirceViewResolver라는 뷰 리졸버를 자동으로 등록하는데 이떄 위에 application.properties에서 위에 있는 설정정보를 사용해서 등록한다. 
 
+  3-2
+    -> 스프링부트가 자동 등록하는 뷰리졸버
+    -> BeanNameViewResilver : 빈 이름으로 (논리이름 "new-form")뷰를 찾아서 반환한다. (엑셀파일 생성 기능에 사용)
+    -> InternalResourceViewResolver : JSP를 처리할 수 있는 뷰를 반환한다. 
 
 4. 스프링 MVC - 시작하기
+  4-1
+    -> 스프링이 제공하는 기능은 기본적으로 애노테이션 기반으로 사용된다.
+    -> @RequestMapping을 사용하는 컨트롤러!! @RequestMapping ->> RequestMappingHandlerMapping , RequestMappingHandlerAdapter 가장 우선순위가 높다.
+    -> @Controller를 class에 붙이고, 메소드에는 @RequestMapping 가 있으면 이 기능이 호출되어 사용된다. 
+    -> @Controller은 스프링이 자동으로 스프링 빈으로 등록한다. (@Component를 구현되어있어서), 스프링 MVC에서 애노테이션 기반 컨트롤러로 인식한다.
+    -> @RequestMapping은 요청정보를 매핑하고, 해당 URL이 호출되면 메서드가 호출되며, 애노테이션 기반이라 메서드의 이름은 임의로 지으면 되고, 모델과 뷰 정보를 담아서 ModelAndView를 반환하면 된다.
+  4-2
+    -> RequestMappingHandlerMapping은 스프링 빈 중에서 @RequestMapping 또는 @Controller가 class 레벨에 붙어 있는 경우에 매핑 정보로 인식한다.
 
 5. 스프링 MVC - 컨트롤러 통합
+  5-1
+    -> @RequestMapping 은 메소드 단위라서 하나의 컨트롤러 아래에 통합 할 수 있어 가독성을 높일수 있다.
+    -> class 레벨에서 @RequestMapping("공통된 url주소")를 하면 URL 주소들이 합쳐지면서 각 개별의 맞는 메소드 URL이 호출된다. 
 
 6. 스프링 MVC - 실용적인 방식
+  6-1 실무에서 가장 많이 사용하는 스타일임.
+    -> class에 @Controller을 붙이기
+    -> class에 @RequestMapping("공통 URL 붙이기")
+    -> 각 메소드 단위에 @RequestMapping 논리 URL 붙이기
+    -> 각 메소드 단위에 반환타입을 String 으로 하고 return "논리 URL" 로 return 하기.
+    -> 각 메소드 단위에 파라미터를 (@RequestParam("username") String username or Model model) 형식으로 파라미터를 받는다.
+    -> model에는 model.addAttribute("member", member); return "save-result" 로 한다.
+
+  6-2
+    -> @RequestMapping 에는 get이나 post든 어떤 요청으로 와도 상관이 없는데 좋은 개발은 아니다. 구분하는것이 좋은데
+    -> @RequestMapping(value= "save" , method=RequestMethod.GET) 이런식으로 GET, POST를 구분지어서 받을수 있도록 한게 좋다.
+    -> or @GetMapping("save") / @PostMapping("save") 형식으로 해도 된다.
