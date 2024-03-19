@@ -1,4 +1,5 @@
-1. 프로젝트 생성
+
+.1. 프로젝트 생성
   1-1
     -. 프로젝트 선택
         Project: Gradle Project
@@ -55,26 +56,140 @@
     -. @GetMappiug(value="/mapping-param" , params = "mode=debug") 는 파라미터 mode라는 키로 dubug라는 value가 있어야만 호출 되도록 한다.
     -. headers 에서는 HTTP 메시지 헤더에 mode키로 debug라는 값이 있어야 호출된다.
     -. @PostMapping(value="/mapping-consumne" , consumes = "application/json") // context-Type으로도 구분해서 받을수 있다. (application/json)
-    -. 
 
 4. 요청매핑 - API 예시
+  4-1 회원관리 API
+    -. 회원 목록조회 : GET /users
+    -. 회원 등록 : POST /users
+    -. 회원 조회 : GET /users/{userid}
+    -. 회원 수정 : PATCH /users/{userid}
+    -. 회원 삭제 : DELETE /users/{userid}
+
+  4-2
+    -. text 형식으로 보내면 html 형식으로 , api형식으로 보내면 json 형식으로 리턴
 
 5. HTTP 요청 - 기본, 헤더 조회
+  5-1 애노테이션 기반의 스프링 컨트롤러(ReqeustMappingAdapterMapping)는 다양한 파라미터를 지원하는데 HTTP 헤더를 조회하는 방법이다.
+    -. 위의 기반으로 받을수 있는 파라미터는 아래와 같다.
+      ->> HttpServletReqeust request, 
+          HttpServletResponse response , 
+          HttpMethod httpMethod, Locale locale, 
+          @RequestHeader MulyiValueMap<String, String> headerMap, 
+          @ReqeustHeader("host") String host
+          @CookieValue(value = "myCookie", required = false) String cookie
+    -. 위와 같은 파라미터를 입력하여 각 정보를 받을수 있다. (그외에도 들어오는것들이 많다. ex) Model model )
+  5-2. 파라미터 목록 및 응답 목록은 공식메뉴얼에도 있으며 다양하게 있다.
 
 6. HTTP 요청 파라미터 - 쿼리 파라미터, HTML Form
+  6-1
+    -. Get방식의 쿼리파라미터, Post-HTML_form 방식, Http message body 3가지 방식이 있다. 
+
+  6-2 요청파라미터 (Get 쿼리파라미터 ?user=jang / Post Html form )
+    -. HttpServletRequest request > request.getParameter() 를 사용하여 두가지 파라미터를 받을수 있다. (Http 메시지 바디에 담겨와서)  ---->>> 이것을 요청파라미터라고 한다.
+    -. 스프링부트안에 jar프로젝트 에서는 resources > static 에 파일들은 외부에 공개되는 파일들이다. (html 파일) // war파일은 wepApp에 있다. 
 
 7. HTTP 요청 파라미터 - @ReqeustParam
+  7-1
+    -. 스프링이 제공하는 @RequestParam을 사용하면 요청파라미터를 매우 편리하게 사용할 수 있다. 
+    -. 스프링에서 리턴타입 String이면서 Stirng을 반환할 경우 논리적 url 주소를 보내는것으로 인식한다. 그래서 http 바디에 그냥 메세지를 보낼려면, @RestController를 class 단위로 붙이고
+       혹은 메소드단위에 @ResponseBody를 붙여서 사용한다.  이렇게 하면 Http 응답메세지에 글자 그대로 보낸다. 
+  7-2
+    -. @ReqeustParam(required=false or true) 기능도 있다. (필수값 여부) 기본 값은 true다. false에서 int는 안된다. null을 받을수 없어서. (기본 primitive에 null 넣으면 안된다.!)
+    -. @ReqeustParam(defaultValue="content") 기능도 있다. >> null일경우 및 빈문자("")에도 default값이 들어간다. 
+  7-3 파라미터를 Map으로 받을수 있다.
+    -. @RequestParam Map<Stirng, Object> paramMap 으로 해서 Map형식으로 받을수도 있다. >> paramMap.get("username") 과 같이 값을 꺼낼수 있다.
+    -. 파라미터 값이 1개가 확실하다면(키값이) Map을 쓰는게 맞지만 그렇지 않다면 MultiValueMap으로 받아서 사용하자
 
 8. HTTP 요청 파라미터 - @ModelAttribute
+  8-1  개발을 하면 요청파라미터를 받아서 필요한 객체를 만들고 그 객체에 값을 넣어주어야 한다. 근데 이것을 한번에 해결 가능하게 해주는 기능이 있는데 이것이 @ModelAttribute 다.
+    -. @Data 롬복을 사용하면 게터, 세터등 다양한 기능들을 사용하게 해준다. 
+    -. @ModelAttribute(HelloData helloData)와 같이 사용하면 게터와 세터를 이용해서 값을 객체에 자동적으로 넣어준다. 
+      ->> 요청파라미터의 이름으로 HelloData 객체의 프로퍼티를 찾는다. 그리고 해당 프로퍼티의 setter를 호출해서 파라미터의 값을 입력(바인딩) 한다.
+      ->> 프로퍼티란??? 객체에 getUsername() / setUsername()이 있으면 이 객체에는 username이라는 프로퍼티를 가지고 있다. 이 프로퍼티의 값을 변경할려면 setUsername()이 호출되고
+          이 프로퍼티를 조회하면 getUsername()이 호출된다. 
+    -. @ModelAttribute에서 int에 문자를 넣을 경우 바인딩오류가 발생한다. 
+    
+  8-2 @ModelAttribute를 생략 가능하다. 
+    -. 그냥 뺴고 객체(도메인)을 넣어서 사용해도 자동적으로 프로퍼티 바인딩이 된다.
+
+  8-3 Spring에서는 바인딩시 다음과 같은 규칙을 가지고 있다.
+    -. String, int, Integer 같은 단순타입은 @ReqeustParam 을 이용하여 바인딩 한다.
+    -. 나머지에는 @ModelAttribute를 이용하여 바인딩한다. (argument resolver로 지정해둔 타입 제외 >> ex)HttpServletResponse 와같이 미리 정해둔 타입들 )
 
 9. HTTP 요청 메시지 - 단순 텍스트
+  9-1 HTTP message body에 데이터를 담아서 요청 >> 주로 HTTP API 에서 주료 사용한다. (JSON, XML, TEXT) /// 여기에서는 Http message body에 단순 텍스트를 담아서 보낸것을 읽어보겠다.
+    -. 요청 파림터와 다르게 Http 메시지 바디를 통해 데이터가 직접 데이터가 넘어오는 경우는 @ReqeustParam, @ModelAttribute로 받을수 없다.
+    -. Http 메시지 바디의 데이터를 InputStream에 담아서 직접 읽을수 있다. 
+      -->> ServletInputStream inputStream = request.getInputStream();
+      -->> String messageBody = StreamUtiles.copyToString(inputStream, StanderdCharsets.UTF-8);       >> Stream은 항상 Byte코드로 넘어온다 그리하여 항상 어떤타입으로 인코딩 할지 정해줘야 한다.
+
+  9-2 (HttpServletRequest request, HttpServletResponse response)을 사용하여 받는게 아니라 다른 파라미터로 받을수 있다.
+    -. (InputStream inputStream, Writer responseWriter)  >> String messageBody = StreamUtiles.copyToString(inputStream, StanderdCharsets.UTF-8);
+        방식으로 사용도 가능하다.
+
+  9-3 (HttpEntity<String> httpEntity) 으로 사용가능하다.
+    -. String messagedBody = httpEntity.getBody(); 와 같이 사용 가능하다. 
+
+  9-4 HttpEntity를 스프링에서 제공하는데 이는 Http 헤더와 바디의 정보를 직접 조회 하는것이다.
+    -. 이는 요청파라미터를 조회하는 기능과 관계 없다. 
+    -. 그리고 리턴타입에서도 사용 가능한데 httpEntity는 메시지 바디에 정보와 헤더에 정보를 직접 반환할수 있다. (view 조회 기능은 안된다.)
+
+  9-5 @ResponseBody 
+      (@ReqeustBody String messageBody) 형식으로 HttpmessageBody 내용으로 body를 직접 조회하는 기능도 있다. 
 
 10. HTTP 요청 메세지 - JSON
+  10-1 {"username":"hello" , "age":20} / content-type : application/json
+    -. private ObjectMapper objectMapper = new ObjectMapper();
+      -->> ServletInputStream inputStream = request.getInputStream();
+      -->> String messageBody = StreamUtiles.copyToString(inputStream, StanderdCharsets.UTF-8);
+      -->> HelloData helloData = objectMapper.readValue(messageBody, HelloData.class);
+      --> 로하여 객체로 JSon데이터를 받을수 있다. 
+
+  10-2
+    -. @RequestBody 를사용하여 messageBody를 대체해여 넣어서 사용한다. 
+
+  10-3
+    -. (@RequestBody HelloData helloData) 를 사용하여 Json데이터를 객체에 바로 바인딩이 가능하다.  >> HttpMessage 컨버터가 작동하여 HelloData helloData = objectMapper.readValue(messageBody, HelloData.class); 이 기능도 수행해주는 것
+    -. HttpMessage 컨버터는 문자뿐만이 아니라, JSON도 객체로 바인딩 해준다.
+    -. Http 요청시에 content-type이 application/json인지 꼭 확인해야한다. 그래야 JSON을 처리할 수 있는 HTTP 메시지 컨버터가 실행된다.
+    -. (HttpEntity<HelloData> httpEntity)
+      -->> HelloData data = httpEntity.getBody(); 로 하여 Json데이터를 읽을수도 있다. 
+
+    -. @RequestBody 요청 (content-tpye : application/json)
+      -->> JSON요청 ->Http메시지 컨버터 -> 객체
+    -. @ResponseBody 응답  (Accept: application/json)
+      -->> 객체 -> Http메시지 컨버터 -> JSON응답
+
+  10-4
+    -. class에는 @ResponseBody 하고 (@RequestBody HelloData helloData) 를 하고 return을 helloData를 하면 이 객체가 Json으로 변환되어 httpMessageBody에 반환된다.
 
 11. HTTP 응답 - 정적 리소스, 뷰템플릿
+  11-1
+    -. 정적 리소스 : 웹 브라우저에 정적인 HTML, css, js을 제공 할때에 정적리소스를 사용한다.
+    -. 뷰템플릿 : 서버사이드렌더링 으로 웹브라우저에 동적인 HTML을 제공할때에 사용한다.
+    -. HTTP 메시지 사용 : HTTP API를 제공하는 경우에는 HTML이 아니라 데이터를 전달해야 하므로, HTTP 메시지 바디에 JSON 같은 형식으로 데이터를 실어 보낸다. 
+
+  11-2 SpringBoot 에는 다음과 같은 디렉토리에 정적인 리소스를 발송한다.
+    -. /static , /public , /resources , / META-INF/resources
+
+    -. src/main/resources는 리소스를 보관하는 곳이고 , 또 클래스패스의 시작 경로이다. 따라서 다음 디렉토리에 리소스를 넣어두면 스프링부트가 정적 리소스로 서비스를 제공한다. 
+      --->>> src/main/resources/[static, public] 여기서 부터 경로 시작한다. 
+
+  11-3 SpringBoot에는 다음과 같은 디렉토리에 뷰템플릿을 만든다. (뷰템플릿을 거쳐서 HTML이 생성되고, 뷰가 응답을 만들어서 전달한다.)
+    -. 뷰템플릿 경로 (src/main/resources/templates 경로로 시작한다.)
+
+  11-4 String을 반환하는 경우 - View or Http 메세지
+    -. @ResponseBody가 없으면 "response/hello"로 뷰 리졸버가 실행되어서 뷰를 찾고, 렌더링 한다.
+    -. @ResponseBody, HttpEntity가 있으면 뷰리졸버를 실행하지 않고, HTTP메시지 바디에 직접 response/hello라는 문자가 입력된다.
+
+  11-5 스프링부트가 자동으로 ThymeleafViewResolver 와 필요한 스프링 빈들을 등록한다. 그리고 다음 설정도 사용한다. 이 설정은 기본 값 이기 때문에 변경이 필요할 때만 설정변경하면된다.
+    -. applicaion.properties 에서
+      ->> spring.thymeleaf.prefix=classpath:/templates/
+      ->> spring.thymeleaf.suffix=.html
+    
 
 12. HTTP 응답 - HTTP API, 메시지 바디에 직접 입력
 
 13. HTTP 메시지 컨버터
 
-14. 요청 매핑 헨들러 어탭터 구
+14. 요청 매핑 헨들러 어탭터 구현
