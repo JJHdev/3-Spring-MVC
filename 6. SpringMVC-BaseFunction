@@ -1,5 +1,4 @@
-
-.1. 프로젝트 생성
+1. 프로젝트 생성
   1-1
     -. 프로젝트 선택
         Project: Gradle Project
@@ -254,5 +253,37 @@
   @ResponseBody를 class단위로 붙여서 사용할수 있다. 근데 @Controller 과 @ResponseBody를 합친것이 @RestController 이다. 
 
 13. HTTP 메시지 컨버터
+  13-1 뷰 템플릿으로 HTML을 생성해서 응답하는 것이 아니라, HTTP API처럼 JSON데이터를 HTTP 메시지바디에서 직접 읽거나 쓰는 경우 HTTP 메시지 컨버터를 사용하면 편리하다.
+    -. 웹브라우저에서 톰캣서버에 url 요청이 가면 스프링컨테이너 안에서 해당 헨들러를 매핑하여 찾는다. 호출하기전에 @ResponseBody가 있을 경우 뷰리졸버 대신에 HTTP 메시지 컨버터가 실행되어 각타입에 맞게 JSONConverter or StringConverter가 실행된다.
+    -. Byte 처리 등등 여러 기능을 기본으로 해준다.
+    -. 참고로 응답의 경우 클라이언트의 HTTP Accept 헤더와 서버의 컨트롤러 반환타입 정보 둘을 조합해서 HttpMessageCOnverter가 선택된다.
+    -. 스프링MVC는 다음의 경우에 HTTP 메시지 컨버터를 적용한다. 
+      ->> HTTP 요청 : @RequestBody , HttpEntity(RequestEntity) ->> HTTP 바디에 내용을 해석
+      ->> HTTP 응답 : @ResponseBody , HttpEntity(ResponseEntity) ->> HTTP 바디에 내용을 응답
+
+  13-2 HTTP 메시지 컨버터는 HTTP 요청 HTTP 응답 둘다 사용되는데
+    -. canRead(), canWrite() 는 해당 클래스, 미디어 타입을 지원하는지 체크하는데 만족하지 못하면 다음 컨버터로 넘어가 체크한다.
+    -. read(), write()는 메시지 컨버터를 통해서 메시지를 읽고 쓰는 기능
+
+  13-3 스프링 부트에서의 기본 메시지 컨버터를 등록한다.
+    -. ByteArrayHttpMessageConverter          요청 : byte[] , */*                       / 응답 byte[] , application/octet-stream
+    -. StringHttpMessageConverter             요청 : String , */*                       / 응답 String , text/plain
+    -. MappingJackson2HttpMessageConverter    요청 : 객체, HashMap , application/json   / 응답 객체 , application/json
+
+  13-4 
+    -. @RequestBody, HttpEntity, @ResponseBody이 있는지 체크 >> 대상 클래스 타입을 지원하는지 체크 >> (요청시 content-type, 응답시 accpet)대상 미디어 타입을 지원 하는지 체크 >> 통과 되면 read() or write()를 호출하여 객체를 생성하고 반환.
+    -. 만약에 @ReqeustBody String date 이면서 content-type: application/json 이면 어떻게 되는가? 클래스타입과 미디어 타입이 맞는지 체크하는데 String이라서 json컨버터는 작동안한다.
+       그런데 String타입이여서 String타입을 찾고 미디어타입에서는 */*이라 StringHttpMessageConverter를 호출한다.
+    -. 만약에 @ReqeustBody HelloData heooldata 이면서 content-type: text/plain 이면 전부 탈락하여 사용이 안된다.
 
 14. 요청 매핑 헨들러 어탭터 구현
+  14-1 
+    -. Http메시지 컨버터는 스프링 MVC에서 헨들러 어댑터에서 작동한다.
+    -. @ResponseBody, @ReqeustParam 같은 것들은 헨들러 어뎁터에서 작동하는데, DispetcherSerblet >> 헨들러 어댑터 >> Argument Resolver >> 헨들러 >> Return Value Handler >> 헨들러 어댑터
+    -. Argument Resolver여기에서 작동하는 것이다. (Model이든 요청부분에서 파라미터 HTTP메시지를 처리 하는 부분에서 처리한다.)
+    -. 파라미터에 있는것들을 헨들러 어댑터에서 Argument Resolver에 가져다 줄수있어? 하면서 요청한다. Argument Resolver에서 헨들러에 전달해준다.
+
+  14-2
+    -. 헨들러에서 return할때 ModelAndView , @ResponseBody, String에서 반환 타입이 다양하게 될수 있는 이유도 Return Value Handler에서 응답 값을 변환하고 처리한다. String으로 뷰이름을 반환해도 변환되는 이유도 이것 덕분이다.
+    -. Http Message Converter를 사용하는 @ResquestBody, @ResponseBody 둘다에서 어떻게 사용할수 있을까?? Argument Resolver와 Return Value Handler안에서  Http메시지 컨버터를 사용하여 처리한다.
+    -. Argument Resolver에서는 파라미터를 호출가능한지 체크하는 것이고, 여기에서 호출하는 Http Message Converter는 Http의 message를 변환하는것이다.
