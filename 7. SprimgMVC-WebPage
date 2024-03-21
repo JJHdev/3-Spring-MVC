@@ -48,8 +48,12 @@
 
 8. 상품 수정
   8-1
-    -. 
+    -. 상품수정시 itemId는 pathValialbe로 하여 작업하였음.
+    -. 상품 상세와 수정을 Get, Post로 하여 같은 URL 주소로 작업 하였음.
+    -. Post로 들어오고 상세페이지로 이동할때에는 Redirect로 Get 주소로 이동하였음.
 
 9. PRG - Post/ Redirect/ Get
+  9-1
+    -. 
 
 10. RedrectAttribute
