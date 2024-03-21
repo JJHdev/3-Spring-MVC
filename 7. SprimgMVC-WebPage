@@ -54,6 +54,18 @@
 
 9. PRG - Post/ Redirect/ Get
   9-1
-    -. 
+    -. Post로 save 후 Redirect로 상세페이지로 돌아왔다. 그럴 경우에 새로고침을 시도하면 같은 상품이 계속 여러번 저장되는 것을
+       확인 할수 있는데, 이것은 새로고침이 마지막에 서버에 전송한것을 다시 전송하여 다시 저장되는 것인데. 어떻게 해결할까?
+    -. 상품 저장에서 Redirect/item/{id}로 리다이렉트로 요청하는 것이다. (Redirect를 웹브라우저로 이동하면 브라우저에서 Redirect주소로 Get으로 다시 보내서 이동해서 이다.
+       그리하여 실무에서 Post이동 후 Redirect로 웹브라우저에 보내고 웹브라우저에서는 Get으로 리다이렉트로 온 주소를 다시 보내서 서버에서 Get이 호출되어 새로 시작되어 이동하는 것이다.
+    -. 그리하여 Redirect로 하여 이동하면 새로고침하더라도 Get요청이 마지막이라 문제없이 다시 Get으로 실행 되는 것이다. 이것을 줄여서 PRG 라고 한다.
 
 10. RedrectAttribute
+  10-1
+    -. 저장하고 나서 상세화면으로 가면 고객입장에서 보면 저장이 된건지 아닌지? 잘 모를수 있다. (저장이 되었습니다. 메시지를 표출해달라고 요청하였다.)
+    -. RedirectAttribute를 사용하는 것인데, 
+    -. 파라미터에 (Model model, RedirectAttributes redirectAttributes)fh wkrtjdgkrh
+    -. redirectAttributes.addAttribute("itmeId" , name)
+    -. redirectAttributes.addAttribute("status" , true)
+    -. return "redirect/basic/items/{itemId}" 로하면  넘어갈때 >> /basic/items/3?status=true 형식으로 넘어간다.
+    -. 경로변수에는 addAttribute 값이 설정되고, 경로변수와 addAttribute의 key값이 같은게 없을 경우 파라미터 형식으로 이동한다.
