@@ -6,4 +6,44 @@
     -> 이렇게 할경우 war파일 경우 톰캣이 정상 시작되지 않는 문제가 발생하였다. Jar파일의 경우에는 문제 없었는데. 그리하여, Gradle로 설정하면 해결된다.
     -> 유료버전의 경우 제대로 war든 jar든 제대로 내장톰캣 수행됨.
 
-       
+3. 웹서버 -> 정적리소스, HTML, CSS, JS, 이미지, 영상
+   WAS    -> 웹서버 기능 + 프로그램 코드를실행해서 애플리케이션 로직 수행 (동적HTML, HTTP API, 서블릿, JSP, 스프링 MVC)
+
+4. 웹서버와 WAS 의 경계가 모호해지는데 자바는 서블릿 컨테이너 기능을 제공하면 WAS
+
+5. 브라우저 > WAS[웹서버] > DB  -->> 소규모
+   브라우저 > 웹서버 > WAS > DB -->> 대규모
+
+6. 서버에서 처리하는 과정
+  • 서버 TCP/IP 연결 대기, 소켓 연결
+  • HTTP 요청 메시지를 파싱해서 읽기
+  • POST 방식, /save URL 인지
+  • Content-Type 확인
+  • HTTP 메시지 바디 내용 피싱
+    • username, age 데이터를 사용할 수 있게 파싱
+  • 저장 프로세스 실행
+
+  • 비즈니스 로직 실행
+    • 데이터베이스에 저장 요청
+
+  • HTTP 응답 메시지 생성 시작
+    • HTTP 시작 라인 생성
+    • Header 생성
+    • 메시지 바디에 HTML 생성에서 입력
+  • TCP/IP에 응답 전달, 소켓 종료
+
+    -->> servlet가 비즈니스 로직실행 데이터베이스에 저장 요청 부분 제외하고 전부 수행해줘 쉽게 사용 가능해졌다.
+
+7. 서블릿 사용방법
+  -
+  @WebServlet(name = "helloServlet", urlPatterns = "/hello") 
+  public class HelloServlet extends HttpServlet { 
+     @Override 
+     protected void service(HttpServletRequest request, HttpServletResponse response){ 
+       //애플리케이션 로직
+     } 
+  }
+• urlPatterns(/hello)의 URL이 호출되면 서블릿 코드가 실행
+• HTTP 요청 정보를 편리하게 사용할 수 있는 HttpServletRequest
+• HTTP 응답 정보를 편리하게 제공할 수 있는 HttpServletResponse
+• 개발자는 HTTP 스펙을 매우 편리하게 사용
