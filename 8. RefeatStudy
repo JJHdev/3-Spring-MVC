@@ -1,23 +1,6 @@
 -----------------------------------스스로 공부한 내용 중요하다 생각들고 찾은것-----------------
-1. 어떻게 Controller1개에서 수십만개의 요청이 처리 되는가? 
-  -> tomcat에서 worker therad가 200개 이다. tomcat에서 스레드풀을 생성하여 HttpReqeust가 들어 올때 하나의 스레드를 재사용 및 재배정을 진행한다.
-  -> Request 별로 Thread가 별도로 생성되고 이에 따라 각각의 ServletContext를 갖는 것 같은데, 이 쓰레드들이 하나의 Controller 객체를 공유한다는 것이 가능한가??
-  -> Controller 객체 하나를 생성하면 객체 자체는 Heap에 생성되지만, 
-    !!!! 해당 Class의 정보는 Method Area(또는 Permanent Area)에 저장된다는 것이다. 결국 힙 영역이던 메소드 영역이던 모든 쓰레드가 객체의 Binary Code 정보를 공유할 수 있다는 뜻이다. 공유되는 정보를 사용하기 위하여 굳이 Controller 객체를 사용하고 있는 쓰레드나 Controller 객체 자체가 Block될 필요는 없다는 것이다.
-
-2. 서블릿 컨테이너와 스프링 컨테이너는 어떻게 다른가?  (https://sigridjin.medium.com/servletcontainer%EC%99%80-springcontainer%EB%8A%94-%EB%AC%B4%EC%97%87%EC%9D%B4-%EB%8B%A4%EB%A5%B8%EA%B0%80-626d27a80fe5 내용정리 잘되어있음)
-  -. Servlet은 Java EE의 표준 중 하나로 javax.servlet Package를 기반으로 Server에서 동작하는 Class들을 의미한다. 각 Servlet은 init(), service(), destory() 3개의 method를 반드시 정의해야 한다.
-  -. ServletContainer는 Servlet의 생성주기(life-cycle)을 관리하고, 매번 요청이 들어올 때마다 새로운 쓰레드를 요청 별로 부여한다. 
-  -. Thread-per-request를 Thread-per-connection에 우선해서 쓰는 이유는 뭐죠? >> 커넥션이 연결되는동안 사용하지 않더라도 스레드가 유지되어 요청당 유지되는 스레드를 사용하는게 경제적으로 맞다.
-  -. Servlet Container의 예시로는 Tomcat이 있는데, Tomcat Server가 요청을 받으면 Tomcat Engine이 요청에 맞는 Context를 찾고, 해당 Context는 본인의 web.xml을 바탕으로 전달받은 요청을 Servlet에 전달하여 처리되도록 한다.
-  -. 톰캣 엔진으로 여러 인스턴스를 띄워서 WAR 파일 개수만큼 인스턴스를 구동시킬 수 있을 것이다. 단, 이럴 경우 여러 개의 인스턴스가 모두 동일한 하나의 톰캣 위에서 운영되니 해당 톰캣에 문제가 발생할경우 모든 인스턴스에 문제가 전파가 될 것이다.
-  -. Q: JVM이 Servlet을 실행하는 것과, 일반 자바 클래스를 실행하는 것에 차이가 있나요? 
-     A: JVM에서의 호출 방식은 서블릿과 일반 클래스 모두 같으나, 서블릿은 main() 함수로 직접 호출되지 않는다는 차이가 있다. 서블릿은 Tomcat 같은 Web Container에 의해 실행되는 것이다. Container가 web.xml을 읽고 서블릿 클래스를 class loader에 등록하는 절차를 밟는다.
-
-  -. HttpRequest가 Servlet Container로 새로이 들어오면 Servlet Container는 HttpServletRequest, HttpServletResponse 두 객체를 생성한다. GET/POST 여부에 따라 doGet() 이나 doPost()를 실행하게 되며, 동적 페이지 생성 후, HttpServletResponse 객체에 응답을 보낸다. 이 때, 각각의 Servlet 클래스는 JVM의 Class Loader에 의해 로딩된다. Java Servlet container는 서블릿 생성자를 호출하고, 각각의 서블릿 생성자는 어떠한 매개변수도 받지 않는다.
-
-
-
+1. 서블릿 컨테이너와 스프링 컨테이너는 뭐가 다를까?? (https://sigridjin.medium.com/servletcontainer%EC%99%80-springcontainer%EB%8A%94-%EB%AC%B4%EC%97%87%EC%9D%B4-%EB%8B%A4%EB%A5%B8%EA%B0%80-626d27a80fe5 내용정리 잘되어있음)
+  -. 스스로 정리한 공책에 내용을을 계속 읽어보면서 내용 이해하기. 
 
 
 ---------------------------------- 웹 어플리케이션의 이해 ---------------------------------- 
@@ -104,7 +87,13 @@
 ----------------------------------        Servlet      ----------------------------------
 1. 서블릿은 톰캣 같은 웹 애플리케이션 서버를 직접 설치하고,그 위에 서블릿 코드를 클래스 파일로 빌드해서 올린 다음, 톰캣 서버를 실행하면 된다. 
 
-2. 
+2. @ServletComponentScan  스프링 부트는 서블릿을 직접 등록해서 사용할 수 있도록 @ServletComponentScan 을 지원한다.  서블릿을 등록하고 사용한다는것은 서블릿컨테이너의 관리를 받겠다.(인터페이스 상속)
+  -. 원래는 web.xml에 설정하거나 할수있지만 스프링부트에서는 어노테이션을 통해 설정이 가능하다는 뜻.
+  -. @WebServlet(name = "helloServlet", urlPatterns = "/hello")
+     @Override
+     protected void service(HttpServletRequest request, HttpServletResponse response){}
+
+3. 
 
 
 ---------------------------------- 웹 어플리케이션의 이해 ---------------------------------- 
