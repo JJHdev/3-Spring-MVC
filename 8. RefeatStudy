@@ -320,4 +320,91 @@ MVC 패턴은 지금까지 학습한 것 처럼 하나의 서블릿이나, JSP�
         어댑터를 추가해서 프레임워크를 유연하고 확장성 있게 설계
 
 
+---------------------------------- 스프링 MVC 구조 이해 ---------------------------------- 
+1. DispatcherServlet도 Servlet을 상속받아서 사용한다. (FrameworkSerlvet 상속받아 사용하는데 이는 HttpServletBean 을 상속받고 이것은 HttpServlet을 상속받는다)
+2. DispatcherServlet은 모든 경로에 / 로 되어있어 사용되지만 servlet을 만들면 더 자세한 경로가 우선순위로 되어있어 기존에 서블릿을 등록해도 사용할 수 있다.
+      ** 동작 순서 **
+    3.1 핸들러 조회: 핸들러 매핑을 통해 요청 URL에 매핑된 핸들러(컨트롤러)를 조회한다.
+    3.2 핸들러 어댑터 조회: 핸들러를 실행할 수 있는 핸들러 어댑터를 조회한다.
+    3.3 핸들러 어댑터 실행: 핸들러 어댑터를 실행한다.
+    3.4 핸들러 실행: 핸들러 어댑터가 실제 핸들러를 실행한다.
+    3.5. ModelAndView 반환: 핸들러 어댑터는 핸들러가 반환하는 정보를 ModelAndView로 변환해서 반환한다.
+    3.6 viewResolver 호출: 뷰 리졸버를 찾고 실행한다.
+        JSP의 경우: InternalResourceViewResolver 가 자동 등록되고, 사용된다.
+    3.7 View 반환: 뷰 리졸버는 뷰의 논리 이름을 물리 이름으로 바꾸고, 렌더링 역할을 담당하는 뷰 객체를 반환한다.
+        JSP의 경우 InternalResourceView(JstlView) 를 반환하는데, 내부에 forward() 로직이 있다.
+    3.8 뷰 렌더링: 뷰를 통해서 뷰를 렌더링 한다.
+
+HandlerMapping
+```
+0 = RequestMappingHandlerMapping : 애노테이션 기반의 컨트롤러인 @RequestMapping에서 사용
+1 = BeanNameUrlHandlerMapping : 스프링 빈의 이름으로 핸들러를 찾는다. 
+```
+위와 같이 Mapping으로 찾는게 기본인데 그럼에도 없으면 스프링 빈의 이름으로 헨들러를 찾는다.
+
+
+HandlerAdapter
+```
+0 = RequestMappingHandlerAdapter : 애노테이션 기반의 컨트롤러인 @RequestMapping에서 사용
+1 = HttpRequestHandlerAdapter : HttpRequestHandler 처리
+2 = SimpleControllerHandlerAdapter : Controller 인터페이스(애노테이션X, 과거에 사용) 처리
+
+
+
+4. ViewResolver
+  -. application.properties 에 다음 코드를 추가하자
+    ```
+    spring.mvc.view.prefix=/WEB-INF/views/
+    spring.mvc.view.suffix=.jsp
+    ```
+  스프링 부트는 InternalResourceViewResolver 라는 뷰 리졸버를 자동으로 등록하는데, 이때 application.properties 에 등록한 spring.mvc.view.prefix , spring.mvc.view.suffix 설정 정보를 사용해서 등록한다.
+
+% viewResolver 팁
+  -참고
+      InternalResourceViewResolver 는 만약 JSTL 라이브러리가 있으면 InternalResourceView 를 상
+      속받은 JstlView 를 반환한다. JstlView 는 JSTL 태그 사용시 약간의 부가 기능이 추가된다.
+  -참고
+      다른 뷰는 실제 뷰를 렌더링하지만, JSP의 경우 forward() 통해서 해당 JSP로 이동(실행)해야 렌더링이 된다. 
+      JSP를 제외한 나머지 뷰 템플릿들은 forward() 과정 없이 바로 렌더링 된다.
+  -참고
+      Thymeleaf 뷰 템플릿을 사용하면 ThymeleafViewResolver 를 등록해야 한다. 최근에는 라이브러리만 추
+      가하면 스프링 부트가 이런 작업도 모두 자동화해준다.
+
+5. 스프링 MVC 시작!!!!!!!!!!!!!!!!!****
+  5.1 @RequestMapping
+
+    @Controller
+    public class SpringMemberFormControllerV1 {
+        @RequestMapping("/springmvc/v1/members/new-form")
+        public ModelAndView process(){
+            return new ModelAndView("new-form");
+        }
+    }
+      위에서 @Controller로 스프링 빈의 스캔대상이 된다. 
+      RequestMappingHandlerMapping 은 스프링 빈 중에서 @Controller 가 클래스 레벨에 붙어 있는 경우에 매핑 정보로 인식한다
+
+  5.2 SpringMVC (V1)
+    -.  ModelAndView mv = new ModelAndView("save-result");
+        mv.addObject("member", member);
+        -->> ModelAndView를 통해서 Model에 데이터를 추가할때에는 addObject를 이용한다.
+
+  5.3 SpringMVC (V2)
+    -. @RequestMapping를 이용할 경우 메소드 단위로 실행하여 같은 공통의 기능을 사용시 한 class에 묶어서 사용이 가능하다.
+
+  5.3 SpringMVC (V3)
+    -. @RequestMapping(value = "/new-form", method = RequestMethod.GET)  -->> @GetMapping, @PostMapping
+        -. @GetMapping("/new-form") , @PostMapping("/save") 형식으로 get Post 전문적으로 받을수 있다.
+    
+    -. @RequestParam 사용
+        -. save(@RequestParam("username") String username, @RequestParam("age") int age, Model model) {
+           model.addAttribute("member", member);} 하여 파라미터를 여러 방식으로 받을수 있다.
+
+    -. return 타입은 String으로 하여 return "save-result"; 방식으로 View rendering 할수 있다.
+
+---------------------------------- 웹 어플리케이션의 이해 ---------------------------------- 
+
+
+---------------------------------- 웹 어플리케이션의 이해 ---------------------------------- 
+
+
 ---------------------------------- 웹 어플리케이션의 이해 ---------------------------------- 
