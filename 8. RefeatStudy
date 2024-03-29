@@ -271,11 +271,53 @@ MVC 패턴은 지금까지 학습한 것 처럼 하나의 서블릿이나, JSP�
 
   3. (V3) Request, Response 가 매일 중복되어 전달되니 불필요한 코드가 많다. 이를 Model를 추가해보자.
           View이름에서 논리이름만 받아 자동적으로 물리이름으로 변경되도록 하자.  (ViewResolver 구현)
-    3.1 
+    3.1 viewResolver는 view의 논리이름을 물리이름으로 변경하는 역할.
+    3.2 프론트컨트롤러의 동작순서
+      -. 서블릿인터페이스를 상속받아 모든 url호출시 호출되도록 설정
+      -. 각 컨트롤러와 url주소를 매핑
+      -. 요청된 url주소를 받아 매핑된것을 찾아 보내야할 컨트롤러 객체를 반환
+      -. request요청을 반복문을 사용하여 Map으로 변환한뒤에 컨트롤러에 process로 map을 보내어 비즈니스로직 수행
+      -. 비즈니스로직을 수행 후 ModelView (객체로 되어있어, 논리적인 주소, 응답받은 Map)를 리턴받기.
+      -. ModelView객체를 viewResolver를 돌려 물리적 주소 얻어 render에 있는 필드에 등록하기.
+      -. view를 Rendering하여 Map(model)과, request, response 를 보내기.
+      -. render에서는 Map을 request.setAttribute 반복문 돌리고, 미리 등록했던 물리적 주소로 forward 하기.
 
+  4. (V4) V3버전에서 크게 달라진다기 보다 좀더 편하게 사용이 가능하도록 변경하겠음.
+    4.1   Map<String, String> paramMap = createParamMap(request);      // reqeust.getParameter해서 Map에 담은것들
+          Map<String, Object> model = new HashMap<>();                 // process에서 model에 put을 해서 응답 보낼 객체를 담고, render에서 reqeust.setAttribute를 한다.
+  
+          String viewName = controller.process(paramMap, model);
 
+  5. (V5) -> V3 방식(paramMap / return = ModelAndView) V4 방식 (paramMap, Model / return = String) 둘다 유동적으로 사용하는 방법
+    5.1 HandlerAdapter라는 인터페이스를 만들어서 컨트롤러를 호출하는 부분과 어느컨트롤러에 맞는지 support를 선언한다.
+    5.2 ControllerV3HandlerAdapter 를 만들어 HandlerAdapter를 상속받는다. (support는 controller3가 맞는지 체크) > hanlder 호출하는 부분은 각 알맞는 컨트롤러에 보낼 파라미터와 ModelView를 만들어 리턴한다.
+    5.3 ControllerV4HandlerAdapter 를 만들어 HandlerAdapter를 상속받는다. (support는 controller4가 맞는지 체크) > hanlder 호출하는 부분은 각 알맞는 컨트롤러에 보낼 파라미터와 ModelView를 만들어 리턴한다.
+    5.4 FrontController를 만들어 각 URL에 맞는 컨트롤러를 Map에 매핑한다. (생성자 역할)
+    5.5 FrontController를 만들어 각 모든 ControllerHandlerAdaper를 List에 매핑한다. (생성자 역할)
 
+    5.6 프론트컨트롤러는 모든 요청이 오면 실행되며 처음에 url요쳉에 맞는 핸들러를 찾는다.
+        -> 5.4에 Map에 매핑되어있는걸로 찾는다.
+    5.7 프론트컨트롤러는 핸들러를 찾았으면 어느 어뎁터(파라미터는 뭘로보낼지 리턴(view)를 ModelView 변환 방식)을 맞춰야 할지 Adpater를 찾는다.
+        -> 5.5dp List에 매핑할걸로 찾는다.
+    
+    5.8 찾은 Adapter에서 process를 수행하여 각 어뎁터에 맞는 방식으로 컨트롤을 호출하고 return값을 modelView로 변환하여 받는다.
 
+    5.9 리턴 받은 ModelView를 viewResolver로 논리경로 -> 물리경로 변환하여 MyView에 물리경로를 셋팅한다.
+    5.10 MyView에서 렌더링을 수행한다. (ModelView에서 모델을 보내고, reqeust, response)를 보내 forward한다.
+
+    v1: 프론트 컨트롤러를 도입
+        기존 구조를 최대한 유지하면서 프론트 컨트롤러를 도입
+    v2: View 분류
+        단순 반복 되는 뷰 로직 분리
+    v3: Model 추가
+        서블릿 종속성 제거
+        뷰 이름 중복 제거
+    v4: 단순하고 실용적인 컨트롤러
+        v3와 거의 비슷
+        구현 입장에서 ModelView를 직접 생성해서 반환하지 않도록 편리한 인터페이스 제공
+    v5: 유연한 컨트롤러
+        어댑터 도입
+        어댑터를 추가해서 프레임워크를 유연하고 확장성 있게 설계
 
 
 ---------------------------------- 웹 어플리케이션의 이해 ---------------------------------- 
